@@ -26,13 +26,12 @@ model = tf.keras.models.load_model("model_pneum_co.h5")
 def model_predict(img, model):
     img = image.load_img(img, target_size=(256, 256), color_mode="rgb") #color_mode="grayscale"
     x = image.img_to_array(img)
-    y = x
     x = x/255    
     x = np.expand_dims(x, axis=0)
     preds = model.predict(x)
-    return y, preds
+    return x, preds
 
-y, preds = model_predict('IM-0001-0001.png', model)
+x, preds = model_predict('IM-0001-0001.png', model)
 #urllib.request.urlretrieve("https://media.springernature.com/lw685/springer-static/image/art%3A10.1186%2Fs12879-020-4869-3/MediaObjects/12879_2020_4869_Fig2_HTML.png", "test.jpg")
 #x, preds = model_predict('test.jpg', model)
 
@@ -49,4 +48,7 @@ tf.compat.v1.disable_eager_execution()
 
 model2 = load_model('model_pneum_co.h5')
 model2.layers[-1].activation = None
-display(eli5.show_prediction(model2, x, layer="conv2d_6"))
+
+visualization = eli5.show_prediction(model2, x, layer="conv2d_6")
+visualization.save("visualized_image.png")
+Image.open("visualized_image.png") 
