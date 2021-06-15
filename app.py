@@ -16,9 +16,6 @@ app = Flask(__name__)
 
 CORS(app)
 
-model = load_model('model_pneum_co.h5')
-
-
 # print(model)
 
 @app.route('/')
@@ -70,9 +67,9 @@ def predict_pneumonia():
 
     img = np.expand_dims(img, axis=0)
 
-    pred = model.predict(img)
-
     tf.compat.v1.disable_eager_execution()
+    model = tf.keras.models.load_model("model_pneum_co.h5")
+    pred = model.predict(img)
 
     model_visualize = load_model('model_pneum_co.h5')
     model_visualize.layers[-1].activation = None
@@ -81,10 +78,6 @@ def predict_pneumonia():
     visualization.save('imgPneum1.png')
 
     print(visualization.url)
-
-    # print(visualization)
-
-    # tf.compat.v1.enable_eager_execution()
 
     if pred[0][0] >= 0.5:
         return json.jsonify(
