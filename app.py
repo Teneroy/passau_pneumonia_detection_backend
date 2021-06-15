@@ -4,6 +4,13 @@ import numpy as np
 import cv2 as cv
 from PIL import Image
 from tensorflow.keras.models import load_model
+import tensorflow as tf
+import eli5
+import matplotlib.cm
+import keras
+import ipython_genutils
+from imageio import imread
+
 
 app = Flask(__name__)
 
@@ -32,8 +39,9 @@ def predict_pneumonia():
         image_array.append(image['' + val])
 
     img = np.zeros([256, 256, 3])
+    img_compare = np.zeros([256, 256, 3])
 
-    print(img)
+    # print(img)
 
     init_index = 0
 
@@ -41,18 +49,42 @@ def predict_pneumonia():
         for j in range(len(img[i])):
             for k in range(len(img[i][j])):
                 img[i][j][k] = float(image_array[init_index]) / 255.0
+                img_compare[i][j][k] = image_array[init_index]
                 init_index += 1
 
-    print(len(image_array))
-    print(init_index)
-    print(img)
+    # print(len(image_array))
+    # print(init_index)
+    # print(img)
     # cv.imshow('win', img)
     # cv.cvtColor(img, cv.CV_8UC1)
     # cv.imwrite('i1.jpg', img)
 
+
+    #imgGray = None
+    #cv.cvtColor(img_compare, imgGray, cv.COLOR_RGB2GRAY)
+
+    #img1 = imread('i1.jpg', as_gray=True).astype(int)
+
+    #print(img1)
+    #print(imgGray)
+
     img = np.expand_dims(img, axis=0)
 
     pred = model.predict(img)
+
+    tf.compat.v1.disable_eager_execution()
+
+    model_visualize = load_model('model_pneum_co.h5')
+    model_visualize.layers[-1].activation = None
+
+    visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
+    visualization.save('imgPneum1.png')
+
+    print(visualization.url)
+
+    # print(visualization)
+
+    # tf.compat.v1.enable_eager_execution()
 
     if pred[0][0] >= 0.5:
         return json.jsonify(
