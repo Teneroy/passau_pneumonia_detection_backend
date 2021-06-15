@@ -3,7 +3,7 @@ from flask_cors import CORS, cross_origin
 import numpy as np
 import cv2 as cv
 from PIL import Image
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 import tensorflow as tf
 import eli5
 import matplotlib.cm
