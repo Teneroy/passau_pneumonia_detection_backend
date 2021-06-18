@@ -10,13 +10,20 @@ import matplotlib.cm
 import keras
 import ipython_genutils
 from imageio import imread
-
+from skimage.transform import resize
+from scipy.stats import wasserstein_distance
+from emd import *
+from app_utils import *
 
 app = Flask(__name__)
 
 CORS(app)
 
+#model = load_model('model_pneum_co.h5')
+model = tf.keras.models.load_model("model_pneum_co.h5")
+
 # print(model)
+
 
 @app.route('/')
 def hello_world():
@@ -30,6 +37,7 @@ def predict_pneumonia():
     size = data.get("size")
     original_width = size.get("width")
     original_height = size.get("height")
+    forced = data.get("forced")
 
     image_array = []
     for val in image:
@@ -38,59 +46,66 @@ def predict_pneumonia():
     img = np.zeros([256, 256, 3])
     img_compare = np.zeros([256, 256, 3])
 
-    # print(img)
 
-    init_index = 0
+    img_compare, img = fill_nparray_from_data(img, img_compare, image_array)
 
-    for i in range(len(img)):
-        for j in range(len(img[i])):
-            for k in range(len(img[i][j])):
-                img[i][j][k] = float(image_array[init_index]) / 255.0
-                img_compare[i][j][k] = image_array[init_index]
-                init_index += 1
+    img_compare_gray = rgb2gray(img_compare)
+    print(img_compare_gray)
 
-    # print(len(image_array))
-    # print(init_index)
-    # print(img)
-    # cv.imshow('win', img)
-    # cv.cvtColor(img, cv.CV_8UC1)
-    # cv.imwrite('i1.jpg', img)
+    img_a = prepare_img(img_compare_gray, norm_exposure=True)
 
+    is_xray = forced
 
-    #imgGray = None
-    #cv.cvtColor(img_compare, imgGray, cv.COLOR_RGB2GRAY)
+    if not forced:
+        is_xray = emd_comparison(img_a)
 
-    #img1 = imread('i1.jpg', as_gray=True).astype(int)
+    if not is_xray:
+        return json.jsonify(
+            {
+                "probability": 0,
+                "existence": False,
+                "isXray": False
+            }
+        )
 
-    #print(img1)
-    #print(imgGray)
+    # print(img1)
+    # print(imgGray)
 
     img = np.expand_dims(img, axis=0)
 
-    tf.compat.v1.disable_eager_execution()
-    model = tf.keras.models.load_model("model_pneum_co.h5")
     pred = model.predict(img)
 
-    model_visualize = load_model('model_pneum_co.h5')
-    model_visualize.layers[-1].activation = None
 
-    visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
-    visualization.save('imgPneum1.png')
+    # --VIS PART
+    # tf.compat.v1.disable_eager_execution()
+    #
+    # model_visualize = load_model('model_pneum_co.h5')
+    # model_visualize.layers[-1].activation = None
+    #
+    # visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
+    # visualization.save('imgPneum1.png')
+    # -- VIS PART END
 
-    print(visualization.url)
+    #print(visualization.url)
+
+    # print(visualization)
+
+    # tf.compat.v1.enable_eager_execution()
 
     if pred[0][0] >= 0.5:
         return json.jsonify(
             {
                 "probability": pred[0][0] * 100,
-                "existence": False
+                "existence": False,
+                "isXray": True
             }
         )
     elif pred[0][0] < 0.5:
         return json.jsonify(
             {
                 "probability": pred[0][1] * 100,
-                "existence": True
+                "existence": True,
+                "isXray": True
             }
         )
 
