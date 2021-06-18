@@ -68,18 +68,18 @@ def predict_pneumonia():
     img = np.expand_dims(img, axis=0)
 
     tf.compat.v1.disable_eager_execution()
-    model = tf.keras.models.load_model("model_pneum_co.h5")
+    model = tf.keras.models.load_model("model_pneum_co_v1.h5")
     pred = model.predict(img)
 
-    model_visualize = load_model('model_pneum_co.h5')
+    model_visualize = load_model('model_pneum_co_v1.h5')
     model_visualize.layers[-1].activation = None
 
     #visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
 
     if pred[0][0] >= 0.5:
-        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6", targets=[0])
+        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[0])
     elif pred[0][0] < 0.5:
-        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6", targets=[1])
+        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[1])
 
     visualization.save('imgPneum1.png')
 
