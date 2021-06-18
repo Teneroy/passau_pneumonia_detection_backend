@@ -49,6 +49,10 @@ tf.compat.v1.disable_eager_execution()
 model2 = load_model('model_pneum_co.h5')
 model2.layers[-1].activation = None
 
-visualization = eli5.show_prediction(model2, x, layer="conv2d_6")
+if preds[0][0] >= 0.5:
+  visualization = eli5.show_prediction(model2, x, layer="conv2d_6", targets=[0])
+elif preds[0][0] < 0.5:
+  visualization = eli5.show_prediction(model2, x, layer="conv2d_6", targets=[1])
+
 visualization.save("visualized_image.png")
 Image.open("visualized_image.png") 
