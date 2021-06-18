@@ -20,7 +20,7 @@ app = Flask(__name__)
 CORS(app)
 
 #model = load_model('model_pneum_co.h5')
-model = tf.keras.models.load_model("model_pneum_co.h5")
+model = tf.keras.models.load_model("model_pneum_co_v1.h5")
 
 # print(model)
 
@@ -79,7 +79,7 @@ def predict_pneumonia():
     # --VIS PART
     # tf.compat.v1.disable_eager_execution()
     #
-    # model_visualize = load_model('model_pneum_co.h5')
+    # model_visualize = load_model('model_pneum_co_v1.h5')
     # model_visualize.layers[-1].activation = None
     #
     # visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
@@ -89,21 +89,6 @@ def predict_pneumonia():
     #print(visualization.url)
 
     # print(visualization)
-    tf.compat.v1.disable_eager_execution()
-    model = tf.keras.models.load_model("model_pneum_co_v1.h5")
-    pred = model.predict(img)
-
-    model_visualize = load_model('model_pneum_co_v1.h5')
-    model_visualize.layers[-1].activation = None
-
-    #visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
-
-    if pred[0][0] >= 0.5:
-        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[0])
-    elif pred[0][0] < 0.5:
-        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[1])
-
-    visualization.save('imgPneum1.png')
 
     # tf.compat.v1.enable_eager_execution()
 
@@ -138,6 +123,9 @@ def predict_pneumonia():
     #                 print(img[i][j][z])
     #                 print(arr[idx])
     #             idx += 1
+
+
+
 
 
 if __name__ == '__main__':
