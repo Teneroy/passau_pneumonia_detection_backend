@@ -74,7 +74,13 @@ def predict_pneumonia():
     model_visualize = load_model('model_pneum_co.h5')
     model_visualize.layers[-1].activation = None
 
-    visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
+    #visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
+
+    if pred[0][0] >= 0.5:
+        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6", targets=[0])
+    elif pred[0][0] < 0.5:
+        visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6", targets=[1])
+
     visualization.save('imgPneum1.png')
 
     print(visualization.url)
