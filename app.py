@@ -19,15 +19,7 @@ app = Flask(__name__)
 
 CORS(app)
 
-#model = load_model('model_pneum_co.h5')
 model = tf.keras.models.load_model("model_pneum_co_v1.h5")
-
-# print(model)
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
 
 
 @app.route('/api/predictPneumonia', methods=["POST"])
@@ -46,11 +38,9 @@ def predict_pneumonia():
     img = np.zeros([256, 256, 3])
     img_compare = np.zeros([256, 256, 3])
 
-
     img_compare, img = fill_nparray_from_data(img, img_compare, image_array)
 
     img_compare_gray = rgb2gray(img_compare)
-    print(img_compare_gray)
 
     img_a = prepare_img(img_compare_gray, norm_exposure=True)
 
@@ -68,29 +58,28 @@ def predict_pneumonia():
             }
         )
 
-    # print(img1)
-    # print(imgGray)
-
     img = np.expand_dims(img, axis=0)
 
     pred = model.predict(img)
 
-
-    # --VIS PART
+    # --VISUALISATION STARTS
     # tf.compat.v1.disable_eager_execution()
+
+    # model = tf.keras.models.load_model("model_pneum_co_v1.h5")
+    # pred = model.predict(img)
     #
     # model_visualize = load_model('model_pneum_co_v1.h5')
     # model_visualize.layers[-1].activation = None
     #
-    # visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_6")
+    # visualization = None
+    # if pred[0][0] >= 0.5:
+    #     visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[0])
+    # elif pred[0][0] < 0.5:
+    #     visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[1])
+    #
     # visualization.save('imgPneum1.png')
-    # -- VIS PART END
 
-    #print(visualization.url)
-
-    # print(visualization)
-
-    # tf.compat.v1.enable_eager_execution()
+    # --VISUALISATION END
 
     if pred[0][0] >= 0.5:
         return json.jsonify(
@@ -108,24 +97,6 @@ def predict_pneumonia():
                 "isXray": True
             }
         )
-
-    # return ''
-    # str = ''
-    #
-    # arr = str.split(" ")
-    #
-    # idx = 0
-    # for i in range(len(img)):
-    #     for j in range(len(img[i])):
-    #         for z in range(3):
-    #             if img[i][j][z] != float(arr[idx]):
-    #                 print('WRONG! -> ')
-    #                 print(img[i][j][z])
-    #                 print(arr[idx])
-    #             idx += 1
-
-
-
 
 
 if __name__ == '__main__':
