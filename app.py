@@ -85,7 +85,7 @@ def predict_pneumonia():
     
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
     ax.set_title("smooth_grad_map", fontsize=16)
-    ax.imshow(x[0], interpolation='none')
+    ax.imshow(img[0], interpolation='none')
     ax.imshow(smooth_grad_map[0], cmap='inferno', alpha=0.5, interpolation='none')
     ax.axis('off')
     f.savefig("imgPneum1.png")
