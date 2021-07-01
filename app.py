@@ -81,7 +81,7 @@ def predict_pneumonia():
       score = CategoricalScore([1])
     
     smooth_grad = Saliency(model, model_modifier=model_modifier, clone=False)
-    smooth_grad_map = smooth_grad(score, seed_input=x[0], smooth_samples=5, smooth_noise=0.0001)
+    smooth_grad_map = smooth_grad(score, seed_input=img[0], smooth_samples=5, smooth_noise=0.0001)
     
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
     ax.set_title("smooth_grad_map", fontsize=16)
