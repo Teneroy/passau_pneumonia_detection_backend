@@ -1,26 +1,33 @@
-from flask import Flask, request, json
-from flask_cors import CORS, cross_origin
+#pip install tf-keras-vis
+
 import numpy as np
 import cv2 as cv
 from PIL import Image
-from keras.models import load_model
-import tensorflow as tf
-import eli5
+from matplotlib import pyplot as plt
+from matplotlib import cm
 import matplotlib.cm
-import keras
-import ipython_genutils
 from imageio import imread
+import ipython_genutils
 from skimage.transform import resize
 from scipy.stats import wasserstein_distance
 from emd import *
+
+from keras.models import load_model
+import tensorflow as tf
+from tf_keras_vis.utils.scores import CategoricalScore
+from tf_keras_vis.saliency import Saliency
+import keras
+import eli5
+
 from app_utils import *
+from flask import Flask, request, json
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
 
 CORS(app)
 
 model = tf.keras.models.load_model("model_pneum_co_v1.h5")
-
 
 @app.route('/api/predictPneumonia', methods=["POST"])
 def predict_pneumonia():
@@ -63,21 +70,25 @@ def predict_pneumonia():
     pred = model.predict(img)
 
     # --VISUALISATION STARTS
-    # tf.compat.v1.disable_eager_execution()
-
-    # model = tf.keras.models.load_model("model_pneum_co_v1.h5")
-    # pred = model.predict(img)
-    #
-    # model_visualize = load_model('model_pneum_co_v1.h5')
-    # model_visualize.layers[-1].activation = None
-    #
-    # visualization = None
-    # if pred[0][0] >= 0.5:
-    #     visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[0])
-    # elif pred[0][0] < 0.5:
-    #     visualization = eli5.show_prediction(model_visualize, img, layer="conv2d_13", targets=[1])
-    #
-    # visualization.save('imgPneum1.png')
+   
+    def model_modifier(cloned_model):
+        cloned_model.layers[-1].activation = tf.keras.activations.linear
+        return cloned_model
+    
+    if preds[0][0] >= 0.5:
+      score = CategoricalScore([0])
+    elif preds[0][0] < 0.5:
+      score = CategoricalScore([1])
+    
+    smooth_grad = Saliency(model, model_modifier=model_modifier, clone=False)
+    smooth_grad_map = smooth_grad(score, seed_input=x[0], smooth_samples=5, smooth_noise=0.0001)
+    
+    f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
+    ax.set_title("smooth_grad_map", fontsize=16)
+    ax.imshow(x[0], interpolation='none')
+    ax.imshow(smooth_grad_map[0], cmap='inferno', alpha=0.5, interpolation='none')
+    ax.axis('off')
+    f.savefig("imgPneum1.png")
 
     # --VISUALISATION END
 
