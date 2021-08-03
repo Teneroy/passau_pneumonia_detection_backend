@@ -1,4 +1,5 @@
-#pip install tf-keras-vis
+# pip install tf-keras-vis
+import os
 
 import numpy as np
 import cv2 as cv
@@ -22,12 +23,35 @@ import eli5
 from app_utils import *
 from flask import Flask, request, json
 from flask_cors import CORS, cross_origin
+import uuid
+import threading
+import time
 
 app = Flask(__name__)
 
 CORS(app)
 
 model = tf.keras.models.load_model("model_pneum_co_v1.h5")
+
+
+def cleaning():
+    print("Cleaner is waiting")
+    while True:
+        time.sleep(7200)
+        print("Start cleaning")
+        for filename in listdir('./static'):
+            os.remove('static/' + filename)
+        print("Stop cleaning")
+
+
+def model_modifier(cloned_model):
+    cloned_model.layers[-1].activation = tf.keras.activations.linear
+    return cloned_model
+
+
+cleaning_thread = threading.Thread(target=cleaning)
+cleaning_thread.start()
+
 
 @app.route('/api/predictPneumonia', methods=["POST"])
 def predict_pneumonia():
@@ -70,25 +94,24 @@ def predict_pneumonia():
     pred = model.predict(img)
 
     # --VISUALISATION STARTS
-   
-    def model_modifier(cloned_model):
-        cloned_model.layers[-1].activation = tf.keras.activations.linear
-        return cloned_model
-    
-    if preds[0][0] >= 0.5:
-      score = CategoricalScore([0])
-    elif preds[0][0] < 0.5:
-      score = CategoricalScore([1])
-    
+
+    score = 0
+    if pred[0][0] >= 0.5:
+        score = CategoricalScore([0])
+    elif pred[0][0] < 0.5:
+        score = CategoricalScore([1])
+
     smooth_grad = Saliency(model, model_modifier=model_modifier, clone=False)
     smooth_grad_map = smooth_grad(score, seed_input=img[0], smooth_samples=5, smooth_noise=0.0001)
-    
-    f, ax = plt.subplots(nrows=1, ncols=1, figsize=(15, 8))
+
+    f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
     ax.set_title("smooth_grad_map", fontsize=16)
     ax.imshow(img[0], interpolation='none')
     ax.imshow(smooth_grad_map[0], cmap='inferno', alpha=0.5, interpolation='none')
     ax.axis('off')
-    f.savefig("imgPneum1.png")
+
+    filename = "static/" + str(uuid.uuid4()) + ".png"
+    f.savefig(filename)
 
     # --VISUALISATION END
 
@@ -97,7 +120,8 @@ def predict_pneumonia():
             {
                 "probability": pred[0][0] * 100,
                 "existence": False,
-                "isXray": True
+                "isXray": True,
+                "visualization": "",
             }
         )
     elif pred[0][0] < 0.5:
@@ -105,7 +129,8 @@ def predict_pneumonia():
             {
                 "probability": pred[0][1] * 100,
                 "existence": True,
-                "isXray": True
+                "isXray": True,
+                "visualization": filename,
             }
         )
 

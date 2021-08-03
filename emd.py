@@ -5,24 +5,20 @@ from scipy.stats import wasserstein_distance
 import cv2 as cv
 from os import listdir
 
-threshold = 0.0013
+threshold = 0.0014
+
+canonical_img = "xray1.png"
 
 
 def emd_comparison(img):
     img_src = img
     hist_src = get_histogram(img_src)
 
-    result_list = []
-
-    for pathR in listdir('./emd_research_data/right/'):
-        img_in = get_img('./emd_research_data/right/' + pathR, norm_exposure=True)
-        hist_in = get_histogram(img_in)
-        distance = wasserstein_distance(hist_in, hist_src)
-        print('core_img == ' + pathR + ' : ' + str(distance))
-        result_list.append(distance)
-
-    print('FINAL FOR core_img: ' + str(sum(result_list) / len(result_list)))
-    return sum(result_list) / len(result_list) < threshold
+    img_in = get_img('./emd_research_data/right/' + canonical_img, norm_exposure=True)
+    hist_in = get_histogram(img_in)
+    distance = wasserstein_distance(hist_in, hist_src)
+    print('core_img == ' + canonical_img + ' : ' + str(distance))
+    return distance <= threshold
 
 
 def get_img(path, norm_size=True, norm_exposure=False):

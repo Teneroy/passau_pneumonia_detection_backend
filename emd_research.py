@@ -53,7 +53,7 @@ def research():
     print(wrongList)
 
 
-research()
+#research()
 
 # print(emd.emd_comparison('r1.png'))
 # print(emd.emd_comparison('w1.png'))
