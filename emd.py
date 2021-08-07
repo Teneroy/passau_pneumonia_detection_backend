@@ -2,23 +2,27 @@ from imageio import imread
 from skimage.transform import resize
 import numpy as np
 from scipy.stats import wasserstein_distance
-import cv2 as cv
-from os import listdir
 
-threshold = 0.0014
 
-canonical_img = "xray1.png"
+threshold = 0.00095
+
+canonical_img = "xray4.png"
 
 
 def emd_comparison(img):
+    distance = get_distance(img)
+    print('core_img == ' + canonical_img + ' : ' + str(distance))
+    return distance <= threshold
+
+
+def get_distance(img):
     img_src = img
     hist_src = get_histogram(img_src)
 
     img_in = get_img('./emd_research_data/right/' + canonical_img, norm_exposure=True)
     hist_in = get_histogram(img_in)
     distance = wasserstein_distance(hist_in, hist_src)
-    print('core_img == ' + canonical_img + ' : ' + str(distance))
-    return distance <= threshold
+    return distance
 
 
 def get_img(path, norm_size=True, norm_exposure=False):

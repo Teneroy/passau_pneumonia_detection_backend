@@ -1,31 +1,18 @@
 # pip install tf-keras-vis
 import os
-
-import numpy as np
-import cv2 as cv
-from PIL import Image
-from matplotlib import pyplot as plt
-from matplotlib import cm
-import matplotlib.cm
-from imageio import imread
-import ipython_genutils
-from skimage.transform import resize
-from scipy.stats import wasserstein_distance
-from emd import *
-
-from keras.models import load_model
-import tensorflow as tf
-from tf_keras_vis.utils.scores import CategoricalScore
-from tf_keras_vis.saliency import Saliency
-import keras
-import eli5
-
-from app_utils import *
-from flask import Flask, request, json
-from flask_cors import CORS, cross_origin
-import uuid
 import threading
 import time
+import uuid
+
+import tensorflow as tf
+from flask import Flask, request, json
+from flask_cors import CORS
+from matplotlib import pyplot as plt
+from tf_keras_vis.saliency import Saliency
+from tf_keras_vis.utils.scores import CategoricalScore
+
+from app_utils import *
+from emd import *
 
 app = Flask(__name__)
 
