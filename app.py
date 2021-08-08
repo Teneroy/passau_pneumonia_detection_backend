@@ -41,6 +41,11 @@ cleaning_thread = threading.Thread(target=cleaning)
 cleaning_thread.start()
 
 
+@app.route('/')
+def home():
+    return "fine"
+
+
 @app.route('/api/predictPneumonia', methods=["POST"])
 def predict_pneumonia():
     data = json.loads(request.data)
