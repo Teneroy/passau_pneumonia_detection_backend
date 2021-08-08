@@ -3,6 +3,7 @@ import os
 import threading
 import time
 import uuid
+from os import listdir
 
 import tensorflow as tf
 from flask import Flask, request, json
@@ -123,4 +124,4 @@ def predict_pneumonia():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0", port=8080, debug=True)
